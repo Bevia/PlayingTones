@@ -15,7 +15,7 @@ import androidx.core.view.WindowInsetsCompat;
 public class MainActivity extends AppCompatActivity {
 
     private Button get_1sec_button, get_2sec_button, get_3sec_button;
-    private MediaPlayer mediaPlayer;
+    private MediaPlayerManager mediaPlayerManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,69 +33,23 @@ public class MainActivity extends AppCompatActivity {
         get_3sec_button = findViewById(R.id.get_3sec_button);
 
         setupButtons();
+        mediaPlayerManager = new MediaPlayerManager();
 
     }
 
     private void setupButtons() {
-        get_1sec_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playTones(R.raw.tone1sec);
-            }
-        });
-
-        get_2sec_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playTones(R.raw.tone2sec);
-            }
-        });
-
-        get_3sec_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                playTones(R.raw.tone3sec);
-            }
-        });
+        get_1sec_button.setOnClickListener(new ButtonClickListener(this, R.raw.tone1sec));
+        get_2sec_button.setOnClickListener(new ButtonClickListener(this, R.raw.tone2sec));
+        get_3sec_button.setOnClickListener(new ButtonClickListener(this, R.raw.tone3sec));
     }
 
-    private void playTones(int toneResId) {
-        releaseMediaPlayer(); // Release any previously used MediaPlayer instance
-        mediaPlayer = MediaPlayer.create(this, toneResId);
-
-        if (mediaPlayer != null) {
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    releaseMediaPlayer(); // Release MediaPlayer resources when playback completes
-                }
-            });
-
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mp, int what, int extra) {
-                    // Handle errors that may occur during playback
-                    releaseMediaPlayer(); // Release MediaPlayer resources in case of error
-                    return false;
-                }
-            });
-
-            mediaPlayer.start(); // Start playback
-        } else {
-            // Handle the case where MediaPlayer creation fails
-            Toast.makeText(this, "Failed to create MediaPlayer", Toast.LENGTH_SHORT).show();
-        }
+    public void playTones(int toneResId) {
+        mediaPlayerManager.play(toneResId, this);
     }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        releaseMediaPlayer(); // Release MediaPlayer resources when the activity is destroyed
-    }
-
-    private void releaseMediaPlayer() {
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
+        mediaPlayerManager.releaseMediaPlayer();
     }
 }
